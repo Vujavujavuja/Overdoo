@@ -22,3 +22,16 @@ contracts/lib/
 # env
 .env
 .env.local
+
+# node
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+dist/
+
+# local data
+backend/data/
+*.db
+*.db-shm
+*.db-wal

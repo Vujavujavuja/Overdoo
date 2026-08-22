@@ -1,0 +1,9 @@
+{
+  "name": "aeroclaim",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --filter ./backend --filter ./frontend dev",
+    "build": "pnpm --filter ./backend --filter ./frontend build",
+    "test:contracts": "cd contracts && forge test"
+  }
+}
