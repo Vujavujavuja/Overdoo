@@ -80,15 +80,34 @@ contract DelayCoverTest is Test {
         cover.buy{value: premium - 1}(flightKey, COVER);
     }
 
-    function test_cannotInsureSameFlightTwice() public {
+    /// @dev Several policies on one flight are allowed — a family on a single
+    ///      booking pays from one wallet — so each gets its own id and payout.
+    function test_multiplePoliciesOnSameFlight() public {
         uint256 premium = cover.quote(COVER);
         vm.startPrank(flyer);
-        cover.buy{value: premium}(flightKey, COVER);
-        vm.expectRevert(
-            abi.encodeWithSelector(DelayCover.AlreadyCovered.selector, flightKey, flyer)
-        );
-        cover.buy{value: premium}(flightKey, COVER);
+        uint256 a = cover.buy{value: premium}(flightKey, COVER);
+        uint256 b = cover.buy{value: premium}(flightKey, COVER);
         vm.stopPrank();
+
+        assertTrue(a != b);
+        assertEq(cover.policiesOnFlight(flightKey), 2);
+        assertEq(cover.liveCover(), COVER * 2);
+        assertEq(cover.policiesOf(flyer).length, 2);
+    }
+
+    function test_eachPolicyPaysSeparately() public {
+        uint256 premium = cover.quote(COVER);
+        vm.startPrank(flyer);
+        uint256 a = cover.buy{value: premium}(flightKey, COVER);
+        uint256 b = cover.buy{value: premium}(flightKey, COVER);
+        vm.stopPrank();
+
+        _attest(216, 1);
+        uint256 before = flyer.balance;
+        cover.settle(a);
+        cover.settle(b);
+        assertEq(flyer.balance, before + COVER * 2);
+        assertEq(cover.liveCover(), 0);
     }
 
     /// @dev Never sell cover the reserves cannot honour.

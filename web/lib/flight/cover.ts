@@ -1,7 +1,7 @@
 import { encodePacked, keccak256, type Hex } from "viem";
 
 export const DELAY_COVER_ADDRESS =
-  "0x9600DD4e8D0D223D14C9ebEDff1D15dC5cCA11dc" as const;
+  "0xCC79e1e952B4ddb104c9166e47A9F289533a6DC1" as const;
 
 /** Premium as a fraction of cover, matching DelayCover.premiumBps on chain. */
 export const PREMIUM_BPS = 800n;

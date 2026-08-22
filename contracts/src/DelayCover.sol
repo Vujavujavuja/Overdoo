@@ -31,8 +31,10 @@ contract DelayCover is Ownable {
 
     Policy[] private _policies;
     mapping(address => uint256[]) private _byHolder;
-    /// @dev One policy per holder per flight; nobody insures the same seat twice.
-    mapping(bytes32 => mapping(address => bool)) public covered;
+    /// @notice How many policies exist on a flight. Not a limit — one wallet may
+    ///         hold several (a family on one booking pays from one wallet) — but
+    ///         it is the number to watch for correlated exposure.
+    mapping(bytes32 => uint256) public policiesOnFlight;
 
     /// @notice Premiums received minus payouts made. What the underwriter holds.
     uint256 public totalPremiums;
@@ -48,7 +50,6 @@ contract DelayCover is Ownable {
     event PremiumBpsSet(uint256 bps);
 
     error Underpaid(uint256 sent, uint256 required);
-    error AlreadyCovered(bytes32 flightKey, address holder);
     error UnknownPolicy();
     error AlreadySettled();
     error NotAttested(bytes32 flightKey);
@@ -83,7 +84,6 @@ contract DelayCover is Ownable {
     /// @notice Buy cover on a flight. No oracle involved — nothing has happened yet.
     function buy(bytes32 flightKey, uint256 cover) external payable returns (uint256 id) {
         if (cover == 0) revert ZeroCover();
-        if (covered[flightKey][msg.sender]) revert AlreadyCovered(flightKey, msg.sender);
 
         uint256 required = quote(cover);
         if (msg.value < required) revert Underpaid(msg.value, required);
@@ -94,7 +94,7 @@ contract DelayCover is Ownable {
         uint256 available = freeReserves();
         if (available < cover) revert InsufficientReserves(cover, available);
 
-        covered[flightKey][msg.sender] = true;
+        policiesOnFlight[flightKey] += 1;
         liveCover += cover;
         totalPremiums += msg.value;
 

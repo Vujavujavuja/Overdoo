@@ -39,6 +39,23 @@ function Action({
   );
 }
 
+/**
+ * Contract reverts surface as a wall of viem output. Map the ones a user can
+ * actually hit to something they can act on — "AlreadyCovered" in particular is
+ * correct behaviour, not a failure, and should not read like a crash.
+ */
+function humanError(message: string): string {
+  if (message.includes("InsufficientReserves"))
+    return "The underwriting reserve cannot cover this policy right now. Try a shorter route, or top up the contract.";
+  if (message.includes("Underpaid"))
+    return "Premium did not match the quote. Refresh and get a new quote.";
+  if (message.includes("User rejected") || message.includes("denied"))
+    return "You rejected the transaction in your wallet.";
+  if (message.includes("insufficient funds"))
+    return "Not enough MON in this wallet to pay the premium plus gas.";
+  return message.split("\n")[0];
+}
+
 export default function Home() {
   const [flight, setFlight] = useState("");
   const [date, setDate] = useState(yesterday());
@@ -245,7 +262,7 @@ export default function Home() {
           )}
 
           {writeError && (
-            <p className="text-black/50">{writeError.message.split("\n")[0]}</p>
+            <p className="text-black/50">{humanError(writeError.message)}</p>
           )}
         </section>
       )}
