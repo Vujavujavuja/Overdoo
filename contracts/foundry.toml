@@ -1,0 +1,15 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc = "0.8.28"
+
+# Monad Testnet
+eth-rpc-url = "https://testnet-rpc.monad.xyz"
+chain_id = 10143
+
+[rpc_endpoints]
+monad_testnet = "https://testnet-rpc.monad.xyz"
+
+[etherscan]
+monad_testnet = { key = "${MONADSCAN_API_KEY}", chain = 10143, url = "https://testnet.monadscan.com/api" }

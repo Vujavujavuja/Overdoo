@@ -13,3 +13,12 @@ states/
 # Optional
 .env
 .env.local
+# foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/lib/
+
+# env
+.env
+.env.local
