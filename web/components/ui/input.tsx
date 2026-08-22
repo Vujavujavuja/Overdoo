@@ -18,7 +18,7 @@ const containerVariants = {
 const letterVariants = {
   initial: { y: 0, opacity: 0.45 },
   animate: {
-    y: "-165%",
+    y: "-190%",
     opacity: 0.35,
     transition: { type: "spring" as const, stiffness: 300, damping: 20 },
   },
@@ -29,7 +29,7 @@ export const Input = ({ label, className = "", value, ...props }: InputProps) =>
   const showLabel = isFocused || value.length > 0;
 
   return (
-    <div className={cn("relative pt-7", className)}>
+    <div className={cn("relative pt-8", className)}>
       <motion.div
         // motion's `y` replaces the element transform, so the label is anchored
         // from the top rather than centred — otherwise it lands on the text.
@@ -41,7 +41,7 @@ export const Input = ({ label, className = "", value, ...props }: InputProps) =>
         {label.split("").map((char, index) => (
           <motion.span
             key={index}
-            className="inline-block text-base"
+            className="inline-block text-sm"
             variants={letterVariants}
             style={{ willChange: "transform" }}
           >

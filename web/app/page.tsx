@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatEther } from "viem";
+import { decodeEventLog } from "viem";
 import {
   useConnect,
   useConnection,
@@ -11,27 +11,56 @@ import {
 } from "wagmi";
 import { Input } from "@/components/ui/input";
 import { fetchOffer, parseFlight, type Offer } from "@/lib/api";
-import { decodeEventLog } from "viem";
 import { delayCoverAbi } from "@/lib/delayCoverAbi";
 import { DELAY_COVER_ADDRESS } from "@/lib/flight/cover";
 import { monad } from "@/lib/wagmi";
 
 const yesterday = () => new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
 
+/** Arrow + label. No button chrome anywhere. */
+function Action({
+  onClick,
+  disabled,
+  children,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="group flex items-center gap-3 text-base text-black disabled:opacity-30"
+    >
+      <span className="transition-transform group-hover:translate-x-1">&#8594;</span>
+      <span>{children}</span>
+    </button>
+  );
+}
+
 export default function Home() {
   const [flight, setFlight] = useState("");
   const [date, setDate] = useState(yesterday());
-  const [offer, setOffer] = useState<Offer | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const [quote, setQuote] = useState<Offer | null>(null);
+  const [quoting, setQuoting] = useState(false);
+
   const [policyId, setPolicyId] = useState<bigint | null>(null);
-  const [claiming, setClaiming] = useState(false);
+
+  // The delay result is deliberately withheld until after cover is bought —
+  // knowing the outcome first is exactly what makes insurance unsellable.
+  const [checked, setChecked] = useState<Offer | null>(null);
+  const [checking, setChecking] = useState(false);
+
   const [payout, setPayout] = useState<{
     paidOut: boolean;
     payoutMon: number;
     delayMinutes: number;
     explorer: string;
   } | null>(null);
+  const [claiming, setClaiming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { address, isConnected, chainId } = useConnection();
   const { connect, connectors } = useConnect();
@@ -41,53 +70,50 @@ export default function Home() {
 
   const wrongChain = isConnected && chainId !== monad.id;
 
-  async function check() {
+  async function getQuote() {
     const parsed = parseFlight(flight);
     if (!parsed) {
-      setError("Enter a flight number like IB468");
+      setError("Enter a flight number like FR7392");
       return;
     }
     setError(null);
-    setOffer(null);
-    setPolicyId(null);
+    setQuote(null);
+    setChecked(null);
     setPayout(null);
+    setPolicyId(null);
     reset();
-    setLoading(true);
+    setQuoting(true);
     try {
-      setOffer(await fetchOffer(parsed.carrier, parsed.number, date));
-    } catch (e) {
-      setError((e as Error).message);
+      setQuote(await fetchOffer(parsed.carrier, parsed.number, date));
+    } catch (err) {
+      setError((err as Error).message);
     } finally {
-      setLoading(false);
+      setQuoting(false);
     }
   }
 
-  function insure() {
-    if (!offer?.cover) return;
+  function pay() {
+    if (!quote?.cover) return;
     writeContract({
       address: DELAY_COVER_ADDRESS,
       abi: delayCoverAbi,
       functionName: "buy",
-      args: [offer.flight.flightKey, BigInt(offer.cover.coverWei)],
-      value: BigInt(offer.cover.premiumWei),
+      args: [quote.flight.flightKey, BigInt(quote.cover.coverWei)],
+      value: BigInt(quote.cover.premiumWei),
     });
   }
 
-  if (receipt.isSuccess && policyId === null && receipt.data) {
-    for (const log of receipt.data.logs) {
-      try {
-        const parsed = decodeEventLog({
-          abi: delayCoverAbi,
-          data: log.data,
-          topics: log.topics,
-        });
-        if (parsed.eventName === "PolicyBought") {
-          setPolicyId((parsed.args as { id: bigint }).id);
-          break;
-        }
-      } catch {
-        /* not our event */
-      }
+  async function runCheck() {
+    const parsed = parseFlight(flight);
+    if (!parsed) return;
+    setChecking(true);
+    setError(null);
+    try {
+      setChecked(await fetchOffer(parsed.carrier, parsed.number, date));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setChecking(false);
     }
   }
 
@@ -117,10 +143,24 @@ export default function Home() {
     }
   }
 
-  const e = offer?.flight.eligibility;
-  const c = offer?.flight.consensus;
-  const cover = offer?.cover;
+  if (receipt.isSuccess && policyId === null && receipt.data) {
+    for (const log of receipt.data.logs) {
+      try {
+        const parsed = decodeEventLog({ abi: delayCoverAbi, data: log.data, topics: log.topics });
+        if (parsed.eventName === "PolicyBought") {
+          setPolicyId((parsed.args as { id: bigint }).id);
+          break;
+        }
+      } catch {
+        /* not our event */
+      }
+    }
+  }
+
+  const cover = quote?.cover;
+  const covered = receipt.isSuccess;
   const busy = isPending || receipt.isLoading;
+  const result = checked?.flight.eligibility;
 
   return (
     <main className="mx-auto w-full max-w-md px-8 py-24">
@@ -133,148 +173,138 @@ export default function Home() {
           label="Flight number"
           value={flight}
           onChange={(ev) => setFlight(ev.target.value)}
-          onKeyDown={(ev) => ev.key === "Enter" && check()}
+          onKeyDown={(ev) => ev.key === "Enter" && getQuote()}
+          disabled={covered}
         />
-
         <input
           type="date"
           value={date}
           onChange={(ev) => setDate(ev.target.value)}
-          className="mt-8 w-full border-b border-black/25 bg-transparent py-2 text-base text-black outline-none focus:border-black"
+          disabled={covered}
+          className="mt-8 w-full border-b border-black/25 bg-transparent py-2 text-base text-black outline-none focus:border-black disabled:opacity-50"
         />
 
-        <button
-          onClick={check}
-          disabled={loading}
-          className="group mt-10 flex items-center gap-3 text-base text-black disabled:opacity-30"
-        >
-          <span className="transition-transform group-hover:translate-x-1">&#8594;</span>
-          <span>{loading ? "checking" : "check"}</span>
-        </button>
+        {!quote && (
+          <div className="mt-10">
+            <Action onClick={getQuote} disabled={quoting}>
+              {quoting ? "pricing" : "get a quote"}
+            </Action>
+          </div>
+        )}
       </div>
 
       {error && <p className="mt-10 text-base text-black/50">{error}</p>}
 
-      {offer && e && c && (
+      {/* ---- quote: route and price only. No delay information yet. ---- */}
+      {quote && cover && (
         <section className="mt-16 space-y-6 text-base">
           <p className="text-black/45">
-            {offer.flight.depAirport} to {offer.flight.arrAirport}
-            {offer.flight.distanceKm
-              ? `, ${Math.round(offer.flight.distanceKm)} kilometres`
+            {quote.flight.depAirport} to {quote.flight.arrAirport}
+            {quote.flight.distanceKm
+              ? `, ${Math.round(quote.flight.distanceKm)} kilometres`
               : ""}
-            {e.delayMinutes !== null ? `, ${e.delayMinutes} minutes late` : ""}.
+            .
           </p>
 
-          {e.eligible ? (
-            <p className="text-3xl">You are owed &euro;{e.statutoryAmountEur}.</p>
+          <p className="text-3xl">Cover &euro;{cover.coverEur}.</p>
+          <p className="text-black/45">
+            Premium {cover.premiumMon.toFixed(6)} MON. If the flight lands three hours
+            late you are paid {cover.coverMon.toFixed(4)} MON, whatever the airline says.
+          </p>
+
+          {!covered ? (
+            !isConnected ? (
+              <Action onClick={() => connect({ connector: connectors[0] })}>
+                connect wallet
+              </Action>
+            ) : wrongChain ? (
+              <Action onClick={() => switchChain({ chainId: monad.id })}>
+                switch to Monad testnet
+              </Action>
+            ) : (
+              <Action onClick={pay} disabled={busy}>
+                {isPending
+                  ? "confirm in wallet"
+                  : receipt.isLoading
+                    ? "paying"
+                    : `pay ${cover.premiumMon.toFixed(6)} MON`}
+              </Action>
+            )
           ) : (
-            <p className="text-3xl">Nothing owed.</p>
+            <p>
+              Covered.{" "}
+              <a
+                href={`https://testnet.monadvision.com/tx/${hash}`}
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                view transaction
+              </a>
+            </p>
           )}
 
-          <p className="text-black/45">{e.reason}</p>
+          {writeError && (
+            <p className="text-black/50">{writeError.message.split("\n")[0]}</p>
+          )}
+        </section>
+      )}
 
-          {cover && (
-            <div className="space-y-4 border-t border-black/10 pt-6">
-              <p>
-                Cover this flight for &euro;{cover.coverEur}. If it lands three hours
-                late, you are paid automatically.
-              </p>
+      {/* ---- after cover: only now do we look at what the flight did ---- */}
+      {covered && (
+        <section className="mt-14 space-y-6 border-t border-black/10 pt-10 text-base">
+          {!checked ? (
+            <>
               <p className="text-black/45">
-                Premium {cover.premiumMon.toFixed(6)} MON, pays out{" "}
-                {cover.coverMon.toFixed(4)} MON.
+                Your flight is covered. Check it when you land.
+              </p>
+              <Action onClick={runCheck} disabled={checking}>
+                {checking ? "checking flight" : "check my flight"}
+              </Action>
+            </>
+          ) : (
+            <>
+              <p className="text-black/45">
+                Landed {result?.delayMinutes ?? 0} minutes late.
               </p>
 
-              {payout ? (
-                <div className="space-y-2">
-                  <p className="text-3xl">
-                    {payout.paidOut
-                      ? `Paid out ${payout.payoutMon.toFixed(4)} MON.`
-                      : "No payout: under three hours."}
-                  </p>
-                  <p className="text-black/45">
-                    Landed {payout.delayMinutes} minutes late.{" "}
-                    <a
-                      href={payout.explorer}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="underline"
-                    >
-                      view transaction
-                    </a>
-                  </p>
-                </div>
-              ) : receipt.isSuccess ? (
-                <div className="space-y-4">
-                  <p>
-                    Covered.{" "}
-                    <a
-                      href={`https://testnet.monadvision.com/tx/${hash}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="underline"
-                    >
-                      view transaction
-                    </a>
-                  </p>
-                  <button
-                    onClick={claim}
-                    disabled={claiming || policyId === null}
-                    className="group flex items-center gap-3 text-base disabled:opacity-30"
-                  >
-                    <span className="transition-transform group-hover:translate-x-1">
-                      &#8594;
-                    </span>
-                    <span>{claiming ? "settling on chain" : "claim payout"}</span>
-                  </button>
-                </div>
-              ) : !isConnected ? (
-                <button
-                  onClick={() => connect({ connector: connectors[0] })}
-                  className="group flex items-center gap-3 text-base"
-                >
-                  <span className="transition-transform group-hover:translate-x-1">
-                    &#8594;
-                  </span>
-                  <span>connect wallet</span>
-                </button>
-              ) : wrongChain ? (
-                <button
-                  onClick={() => switchChain({ chainId: monad.id })}
-                  className="group flex items-center gap-3 text-base"
-                >
-                  <span className="transition-transform group-hover:translate-x-1">
-                    &#8594;
-                  </span>
-                  <span>switch to Monad testnet</span>
-                </button>
+              {result?.eligible ? (
+                <>
+                  <p className="text-3xl">You are owed &euro;{result.statutoryAmountEur}.</p>
+                  <p className="text-black/45">{result.reason}</p>
+                  {payout ? (
+                    <p className="text-3xl">
+                      {payout.paidOut
+                        ? `Paid ${payout.payoutMon.toFixed(4)} MON.`
+                        : "No payout."}{" "}
+                      <a
+                        href={payout.explorer}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-base underline"
+                      >
+                        view transaction
+                      </a>
+                    </p>
+                  ) : (
+                    <Action onClick={claim} disabled={claiming || policyId === null}>
+                      {claiming ? "settling on chain" : "collect payout"}
+                    </Action>
+                  )}
+                </>
               ) : (
-                <button
-                  onClick={insure}
-                  disabled={busy}
-                  className="group flex items-center gap-3 text-base disabled:opacity-30"
-                >
-                  <span className="transition-transform group-hover:translate-x-1">
-                    &#8594;
-                  </span>
-                  <span>
-                    {isPending
-                      ? "confirm in wallet"
-                      : receipt.isLoading
-                        ? "paying"
-                        : `pay ${cover.premiumMon.toFixed(6)} MON`}
-                  </span>
-                </button>
+                <>
+                  <p className="text-3xl">On time. Nothing owed.</p>
+                  <p className="text-black/45">{result?.reason}</p>
+                  {!payout && (
+                    <Action onClick={claim} disabled={claiming || policyId === null}>
+                      {claiming ? "closing policy" : "close policy"}
+                    </Action>
+                  )}
+                  {payout && <p className="text-black/45">Policy closed, no payout.</p>}
+                </>
               )}
-
-              {writeError && (
-                <p className="text-black/50">{writeError.message.split("\n")[0]}</p>
-              )}
-              {address && (
-                <p className="text-black/30">
-                  {address.slice(0, 6)}&hellip;{address.slice(-4)}
-                </p>
-              )}
-            </div>
+            </>
           )}
         </section>
       )}
