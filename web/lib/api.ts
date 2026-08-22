@@ -1,7 +1,16 @@
 /** Same-origin Next.js API routes — one deploy, no separate backend. */
 export const API = "";
 
+export interface Cover {
+  coverEur: number;
+  coverWei: string;
+  premiumWei: string;
+  premiumMon: number;
+  coverMon: number;
+}
+
 export interface Offer {
+  cover: Cover | null;
   flight: {
     flightKey: `0x${string}`;
     carrier: string;

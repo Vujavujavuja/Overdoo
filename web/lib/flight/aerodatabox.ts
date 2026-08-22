@@ -29,10 +29,22 @@ export function aeroDataBox(apiKey: string | undefined): FlightProvider {
 
     async fetch(carrier, flightNumber, dateISO): Promise<ProviderResult> {
       const url = `https://${HOST}/flights/number/${carrier}${flightNumber}/${dateISO}`;
-      const res = await fetch(url, {
-        headers: { 'x-rapidapi-host': HOST, 'x-rapidapi-key': apiKey! },
-      });
-      const raw = await res.text();
+
+      // The BASIC RapidAPI plan allows roughly one request per second. Two page
+      // loads in quick succession trip it, so back off and retry rather than
+      // reporting "flight not found" for what is really a throttle.
+      let res!: Response;
+      let raw = '';
+      for (let attempt = 0; attempt < 4; attempt++) {
+        res = await fetch(url, {
+          headers: { 'x-rapidapi-host': HOST, 'x-rapidapi-key': apiKey! },
+        });
+        raw = await res.text();
+        const throttled =
+          res.status === 429 || (res.ok && raw.includes('exceeded the rate limit'));
+        if (!throttled) break;
+        await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
+      }
 
       if (!res.ok) {
         return { status: null, raw, source: 'aerodatabox', error: `HTTP ${res.status}` };

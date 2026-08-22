@@ -3,6 +3,9 @@ import { resolveFlight, providers } from "@/lib/flight/consensus";
 import { assessEligibility, adjustRunwayToGate } from "@/lib/flight/eligibility";
 import { distanceBetween } from "@/lib/flight/airports";
 import { priceClaim } from "@/lib/flight/pricing";
+import { baseAmountEur } from "@/lib/flight/eligibility";
+import { isEuEeaCh, airport } from "@/lib/flight/airports";
+import { eurToWei, flightKeyHash, premiumFor } from "@/lib/flight/cover";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,6 +69,17 @@ export async function GET(req: Request) {
       ? priceClaim(eligibility.statutoryAmountEur)
       : null;
 
+    // Insurance quote. Unlike a claim, this does not need the flight to have
+    // happened — it is priced off route distance alone, so it is available
+    // whether the flight has landed or has not taken off yet.
+    const depC = airport(s.depAirport)?.country;
+    const arrC = airport(s.arrAirport)?.country;
+    const intraEu = isEuEeaCh(depC) && isEuEeaCh(arrC);
+    const coverEur = distanceKm !== null ? baseAmountEur(distanceKm, intraEu) : null;
+    const coverWei = coverEur !== null ? eurToWei(coverEur) : null;
+    const premiumWei = coverWei !== null ? premiumFor(coverWei) : null;
+    const flightKey = flightKeyHash(carrier, flightNumber, s.scheduledDeparture);
+
     const blockers: string[] = [];
     if (!eligibility.eligible) blockers.push(eligibility.reason);
     if (consensus.agreement < 2) {
@@ -80,6 +94,7 @@ export async function GET(req: Request) {
       flight: {
         carrier,
         flightNumber,
+        flightKey,
         depAirport: s.depAirport,
         arrAirport: s.arrAirport,
         scheduledArrival: s.scheduledArrival.toISOString(),
@@ -97,6 +112,13 @@ export async function GET(req: Request) {
       purchasable: blockers.length === 0 && breakdown !== null,
       blockers,
       breakdown,
+      cover: coverEur === null ? null : {
+        coverEur,
+        coverWei: coverWei!.toString(),
+        premiumWei: premiumWei!.toString(),
+        premiumMon: Number(premiumWei!) / 1e18,
+        coverMon: Number(coverWei!) / 1e18,
+      },
     });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
