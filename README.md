@@ -37,10 +37,15 @@ Next.js API routes, so `web/` is the whole deployable app.
 ## Quick start
 
 ```bash
+git clone --recursive https://github.com/Vujavujavuja/monad-blitz
+cd monad-blitz
 pnpm install
 cd contracts && forge test        # 39 passing
 cd ../web && npm run dev
 ```
+
+Contract dependencies are submodules — if you cloned without `--recursive`, run
+`git submodule update --init --recursive`.
 
 Copy `.env.example` to `web/.env.local` and fill it in. You need a free key from
 [AeroDataBox](https://rapidapi.com/aedbx-aedbx/api/aerodatabox) or

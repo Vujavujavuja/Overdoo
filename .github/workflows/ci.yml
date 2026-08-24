@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       # The installer resolves its target as ${XDG_CONFIG_HOME:-$HOME}/.foundry.
       # GitHub runners SET XDG_CONFIG_HOME, so it lands in ~/.config/.foundry
