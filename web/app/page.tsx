@@ -79,7 +79,7 @@ export default function Home() {
   const [claiming, setClaiming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { address, isConnected, chainId } = useConnection();
+  const { isConnected, chainId } = useConnection();
   const { connect, connectors } = useConnect();
   const { switchChain } = useSwitchChain();
   const { writeContract, data: hash, isPending, error: writeError, reset } = useWriteContract();

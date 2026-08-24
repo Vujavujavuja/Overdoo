@@ -3,6 +3,23 @@ import { parseUtc, type FlightProvider, type FlightPhase, type ProviderResult } 
 
 const HOST = 'aerodatabox.p.rapidapi.com';
 
+/** Only the fields we read. The provider returns considerably more. */
+interface Movement {
+  airport?: { iata?: string; icao?: string };
+  scheduledTime?: { utc?: string };
+  revisedTime?: { utc?: string };
+  runwayTime?: { utc?: string };
+  actualTime?: { utc?: string };
+}
+
+interface AeroDataBoxFlight {
+  departure?: Movement;
+  arrival?: Movement;
+  status?: string;
+  callSign?: string;
+  greatCircleDistance?: { km?: number };
+}
+
 /** AeroDataBox status vocabulary -> our phases. */
 function mapStatus(raw: string | undefined): FlightPhase {
   switch ((raw ?? '').toLowerCase()) {
@@ -66,7 +83,7 @@ export function aeroDataBox(apiKey: string | undefined): FlightProvider {
         return { status: null, raw, source: 'aerodatabox', error: message };
       }
 
-      const f = parsed[0] as any;
+      const f = parsed[0] as AeroDataBoxFlight;
 
       // This provider does not always populate actualTime even for landed flights;
       // runwayTime and revisedTime are the real-world fallbacks.

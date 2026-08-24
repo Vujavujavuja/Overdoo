@@ -1,6 +1,29 @@
 import type { FlightPhase, FlightProvider, ProviderResult } from "./types";
 import { aviationStackTimeToUtc } from "./tz";
 
+/** Only the fields we read. */
+interface Endpoint {
+  iata?: string;
+  icao?: string;
+  timezone?: string;
+  scheduled?: string;
+  actual?: string;
+  actual_runway?: string;
+}
+
+interface AviationStackFlight {
+  flight_date?: string;
+  flight_status?: string;
+  departure?: Endpoint;
+  arrival?: Endpoint;
+  flight?: { icao?: string };
+}
+
+interface AviationStackResponse {
+  data?: AviationStackFlight[];
+  error?: { message?: string; info?: string };
+}
+
 function mapStatus(raw: string | undefined): FlightPhase {
   switch ((raw ?? '').toLowerCase()) {
     case 'landed':
@@ -35,7 +58,7 @@ export function aviationStack(apiKey: string | undefined): FlightProvider {
         return { status: null, raw, source: 'aviationstack', error: `HTTP ${res.status}` };
       }
 
-      let parsed: any;
+      let parsed: AviationStackResponse;
       try {
         parsed = JSON.parse(raw);
       } catch {
@@ -51,7 +74,7 @@ export function aviationStack(apiKey: string | undefined): FlightProvider {
         };
       }
 
-      const rows: any[] = Array.isArray(parsed.data) ? parsed.data : [];
+      const rows: AviationStackFlight[] = Array.isArray(parsed.data) ? parsed.data : [];
       const f = rows.find((r) => r.flight_date === dateISO);
       if (!f) {
         return { status: null, raw, source: 'aviationstack', error: `no row for ${dateISO}` };

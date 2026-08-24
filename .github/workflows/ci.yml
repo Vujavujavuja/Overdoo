@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  contracts:
+    name: contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The installer appends to a shell profile that CI never sources, so we
+      # call the binaries by absolute path and put them on PATH ourselves.
+      - name: Install Monad Foundry
+        run: |
+          set -euo pipefail
+          curl -L https://foundry.category.xyz | bash
+          test -x "$HOME/.foundry/bin/foundryup" \
+            || { echo "foundryup missing after install"; ls -la "$HOME/.foundry" || true; exit 1; }
+          "$HOME/.foundry/bin/foundryup" --network monad
+          echo "$HOME/.foundry/bin" >> "$GITHUB_PATH"
+
+      - name: Versions
+        run: forge --version && cast --version
+
+      - name: forge build
+        working-directory: contracts
+        run: forge build --sizes
+
+      - name: forge test
+        working-directory: contracts
+        run: forge test -vv
+
+  web:
+    name: web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+
+      - name: typecheck
+        run: npx tsc --noEmit
+
+      - name: lint
+        run: npm run lint
+
+      # No API keys in CI. The build must succeed without them — the app is
+      # designed to error at request time, not fail to build.
+      - name: build
+        run: npm run build
