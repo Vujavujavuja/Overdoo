@@ -15,7 +15,11 @@ export const metadata: Metadata = {
   description: "You're owed money for that delayed flight.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" className={`${serif.variable} h-full antialiased`}>
       <body className="min-h-full bg-white text-black">
