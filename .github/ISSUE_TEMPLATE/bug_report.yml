@@ -1,0 +1,43 @@
+name: Bug report
+description: Something behaves incorrectly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For **security** issues do not use this form — see
+        [SECURITY.md](../../SECURITY.md) and report privately.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: |
+        Include the flight number and date if it involves a lookup — flight data
+        changes over time, so we need the exact input to see what you saw.
+      placeholder: |
+        1. Enter flight IB468, date 2026-08-21
+        2. Click check
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      placeholder: |
+        Browser / wallet:
+        Node version:
+        Deployed or local:
+  - type: textarea
+    id: logs
+    attributes:
+      label: Errors
+      description: Console output, transaction hash, or `forge test` output.
+      render: shell

@@ -45,6 +45,31 @@ git push origin your-change
 CI runs `forge test`, `tsc --noEmit`, `npm run lint` and `npm run build` on
 every PR. All four must pass.
 
+## Commit messages
+
+[Conventional Commits](https://www.conventionalcommits.org). The prefix is what
+generates the changelog, so it matters more than the wording after it.
+
+```
+feat(contracts): reject cover on flights that have already departed
+fix(providers): reinterpret AviationStack times in the airport timezone
+docs: explain why the oracle threshold is 1
+```
+
+| Prefix | Use for |
+|---|---|
+| `feat` | New behaviour |
+| `fix` | A bug |
+| `docs` | Documentation only |
+| `test` | Tests only |
+| `refactor` | No behaviour change |
+| `chore` | Tooling, deps, CI |
+
+Scopes we use: `contracts`, `web`, `providers`, `eligibility`, `ci`.
+
+Add `!` after the scope for anything that changes a deployed contract's
+interface or the meaning of an existing field — `feat(contracts)!:`.
+
 ## What we care about in review
 
 - **No synthetic flight data.** Ever. If a provider can't answer, the correct
