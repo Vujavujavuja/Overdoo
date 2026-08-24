@@ -43,6 +43,7 @@ contract CapitalPoolTest is Test {
         assertEq(pool.idle(), 4 ether);
         assertEq(pool.deployed(), 1 ether);
         assertEq(pool.totalAssets(), 5 ether);
+        
         // Deployed capital is carried at cost until it resolves.
         assertEq(pool.sharePrice(), 1e18);
         assertEq(settlement.balance, before + 1 ether);
