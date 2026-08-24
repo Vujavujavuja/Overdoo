@@ -17,7 +17,7 @@ contract SetThreshold is Script {
         vm.startBroadcast(pk);
         oracle.setThreshold(t);
         vm.stopBroadcast();
-
+        
         console.log("threshold now", oracle.threshold());
     }
 }
