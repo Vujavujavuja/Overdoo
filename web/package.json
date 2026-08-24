@@ -30,6 +30,6 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "tsx": "^4.19.2",
-    "dotenv": "^16.4.7"
+    "dotenv": "^17.4.2"
   }
 }
