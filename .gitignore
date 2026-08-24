@@ -17,7 +17,6 @@ states/
 contracts/out/
 contracts/cache/
 contracts/broadcast/
-contracts/lib/
 
 # env
 .env

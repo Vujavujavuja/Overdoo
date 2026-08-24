@@ -2,6 +2,13 @@
 
 ## Getting set up
 
+Contract dependencies are git submodules, so clone recursively:
+
+```bash
+git clone --recursive https://github.com/Vujavujavuja/monad-blitz
+# already cloned? git submodule update --init --recursive
+```
+
 ```bash
 pnpm install
 cp .env.example web/.env.local     # then fill it in
