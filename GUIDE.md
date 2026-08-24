@@ -24,8 +24,8 @@ Vercel → **Settings → Environment Variables** (Production). All five are req
 
 | Key | Value |
 |---|---|
-| `AERODATABOX_KEY` | `682f6037e2msh7a81eb025ac36c4p1127d2jsn5f125e9866dc` |
-| `AVIATIONSTACK_KEY` | `a34c48fa8d89a02e12d2e12988216af8` |
+| `AERODATABOX_KEY` | your key from [RapidAPI](https://rapidapi.com/aedbx-aedbx/api/aerodatabox) |
+| `AVIATIONSTACK_KEY` | your key from [aviationstack.com](https://aviationstack.com) |
 | `MONAD_RPC_URL` | `https://rpc.ankr.com/monad_testnet` |
 | `DEPLOYER_PRIVATE_KEY` | your key from `.env` (pays gas to settle) |
 | `ATTESTOR_A_PRIVATE_KEY` | from `.env` (signs flight attestations) |
@@ -66,8 +66,8 @@ The payout lands in the same wallet, in the same minute.
 Show `LH1411` too. A policy that always pays is not insurance; watching it
 correctly refuse is what proves the oracle is real.
 
-One wallet can only insure a given flight once. A second person needs a
-different flight or a different wallet.
+Any wallet can insure any flight, more than once — a family on one booking pays
+from a single wallet.
 
 ### Scale
 
@@ -105,7 +105,7 @@ fall back to the 65% default.
 
 | Contract | Address |
 |---|---|
-| DelayCover | `0x9600DD4e8D0D223D14C9ebEDff1D15dC5cCA11dc` |
+| DelayCover | `0xCC79e1e952B4ddb104c9166e47A9F289533a6DC1` |
 | FlightOracle | `0xecEb2252024D77512d38bfcF4141658Ea12BC872` |
 | CapitalPool | `0xbbb3A3d20A0267b4143f4cD91EFbf4639c870670` |
 | ClaimRegistry | `0x2C5aa6422cc2d6232Bf7Ef5ae69E5dd9D24A886f` |
@@ -114,7 +114,7 @@ fall back to the 65% default.
 https://testnet.monadvision.com
 
 ```bash
-cd contracts && forge test    # 43 passing
+cd contracts && forge test    # 39 passing
 ```
 
 ## Finding fresh delayed flights
@@ -122,11 +122,10 @@ cd contracts && forge test    # 43 passing
 Delays go stale. To find new ones:
 
 ```bash
-cd backend
-./node_modules/.bin/tsx src/scripts/findDemoFlight.ts EDDF,LEMD,LFPG 2026-08-22
+pnpm find-delayed -- EDDF,LEMD,LFPG 2026-08-22
 ```
 
 ## Topping up reserves
 
-If the reserve runs low, send MON to the DelayCover address from any wallet —
+If the reserve runs low, send MON to `0xCC79e1e952B4ddb104c9166e47A9F289533a6DC1` from any wallet —
 it has a `receive()` function.

@@ -12,7 +12,6 @@ on-chain by a signing oracle, and settle against a pre-funded reserve.
 ```
 web/         Next.js app — UI, EU261 rules engine, flight APIs, settlement routes
 contracts/   Foundry — DelayCover, FlightOracle, CapitalPool, ClaimRegistry, Settlement
-backend/     Standalone scripts for scanning flights and diagnostics (not deployed)
 ```
 
 There is **no server to run**. The rules engine and settlement logic live in
@@ -24,18 +23,19 @@ Next.js API routes, so `web/` is the entire deployable app.
 
 ```bash
 pnpm install
-cd contracts && forge test        # 44 passing
+cd contracts && forge test        # 39 passing
 cd ../web && npm run dev
 ```
 
-`web/.env.local` needs:
+Copy `.env.example` to `web/.env.local` and fill it in. You need a free key from
+[AeroDataBox](https://rapidapi.com/aedbx-aedbx/api/aerodatabox) or
+[AviationStack](https://aviationstack.com), plus a funded Monad testnet key from
+the [faucet](https://faucet.monad.xyz).
 
-```
-AERODATABOX_KEY=...
-AVIATIONSTACK_KEY=...
-MONAD_RPC_URL=https://rpc.ankr.com/monad_testnet
-DEPLOYER_PRIVATE_KEY=...
-ATTESTOR_A_PRIVATE_KEY=...
+To find flights to test with:
+
+```bash
+pnpm find-delayed -- EDDF,LEMD,LFPG 2026-08-21
 ```
 
 Without a flight-data key the app refuses to answer rather than inventing a

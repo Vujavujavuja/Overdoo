@@ -1,9 +1,10 @@
 {
-  "name": "aeroclaim",
+  "name": "overdoo",
   "private": true,
   "scripts": {
-    "dev": "pnpm --parallel --filter ./backend --filter ./frontend dev",
-    "build": "pnpm --filter ./backend --filter ./frontend build",
-    "test:contracts": "cd contracts && forge test"
+    "dev": "pnpm --filter ./web dev",
+    "build": "pnpm --filter ./web build",
+    "test:contracts": "cd contracts && forge test",
+    "find-delayed": "pnpm --filter ./web find-delayed"
   }
 }

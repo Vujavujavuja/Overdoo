@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "abi": "node genabi.mjs",
-    "dev:lan": "next dev -H 0.0.0.0"
+    "find-delayed": "tsx scripts/find-delayed.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
@@ -29,6 +28,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "tsx": "^4.19.2",
+    "dotenv": "^16.4.7"
   }
 }
