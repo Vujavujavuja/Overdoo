@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  contracts:
+    name: contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Monad Foundry
+        run: |
+          curl -L https://foundry.category.xyz | bash
+          echo "$HOME/.foundry/bin" >> "$GITHUB_PATH"
+
+      - name: foundryup
+        run: foundryup --network monad
+
+      - name: forge build
+        working-directory: contracts
+        run: forge build --sizes
+
+      - name: forge test
+        working-directory: contracts
+        run: forge test -vv
+
+  web:
+    name: web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+
+      - name: typecheck
+        run: npx tsc --noEmit
+
+      - name: lint
+        run: npm run lint
+
+      # No API keys in CI. The build must succeed without them — the app is
+      # designed to return an error at request time rather than fail to build.
+      - name: build
+        run: npm run build
