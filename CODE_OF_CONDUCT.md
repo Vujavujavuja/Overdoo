@@ -21,7 +21,7 @@ information, or sustained disruption of discussion.
 ## Reporting
 
 Report conduct issues privately to the maintainers via
-[GitHub](https://github.com/Vujavujavuja/monad-blitz/security/advisories/new) or
+[GitHub](https://github.com/Vujavujavuja/Overdoo/security/advisories/new) or
 by direct message. Reports are handled confidentially.
 
 Maintainers may edit, remove, or reject contributions and comments that breach

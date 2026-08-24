@@ -18,7 +18,7 @@ costs someone money, in rough order of severity:
 
 **Do not open a public issue for a security bug.**
 
-Use GitHub's [private vulnerability reporting](https://github.com/Vujavujavuja/monad-blitz/security/advisories/new).
+Use GitHub's [private vulnerability reporting](https://github.com/Vujavujavuja/Overdoo/security/advisories/new).
 It goes only to the maintainers and lets us discuss a fix before anything is
 public.
 

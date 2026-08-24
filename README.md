@@ -37,7 +37,7 @@ Next.js API routes, so `web/` is the whole deployable app.
 ## Quick start
 
 ```bash
-git clone --recursive https://github.com/Vujavujavuja/monad-blitz
+git clone --recursive https://github.com/Vujavujavuja/Overdoo
 cd monad-blitz
 pnpm install
 cd contracts && forge test        # 39 passing

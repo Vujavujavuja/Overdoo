@@ -5,7 +5,7 @@
 Contract dependencies are git submodules, so clone recursively:
 
 ```bash
-git clone --recursive https://github.com/Vujavujavuja/monad-blitz
+git clone --recursive https://github.com/Vujavujavuja/Overdoo
 # already cloned? git submodule update --init --recursive
 ```
 

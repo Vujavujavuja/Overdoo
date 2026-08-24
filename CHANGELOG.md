@@ -50,5 +50,5 @@ Documented in full in the README:
 - Payouts come from a pre-funded reserve, not underwriters.
 - No persistence, so carrier recovery rates always use the default.
 
-[Unreleased]: https://github.com/Vujavujavuja/monad-blitz/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/Vujavujavuja/monad-blitz/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Vujavujavuja/Overdoo/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Vujavujavuja/Overdoo/releases/tag/v0.1.0

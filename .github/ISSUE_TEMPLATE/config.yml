@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/Vujavujavuja/monad-blitz/security/advisories/new
+    url: https://github.com/Vujavujavuja/Overdoo/security/advisories/new
     about: Report privately. Do not open a public issue.
   - name: Monad developer Discord
     url: https://discord.gg/monaddev
