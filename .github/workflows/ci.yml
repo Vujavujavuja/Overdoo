@@ -13,16 +13,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # The installer appends to a shell profile that CI never sources, so we
-      # call the binaries by absolute path and put them on PATH ourselves.
+      # The installer resolves its target as ${XDG_CONFIG_HOME:-$HOME}/.foundry.
+      # GitHub runners SET XDG_CONFIG_HOME, so it lands in ~/.config/.foundry
+      # rather than ~/.foundry. It honours FOUNDRY_DIR, so pin that explicitly.
+      # It also only appends to a shell profile CI never sources, hence the
+      # absolute paths and the manual $GITHUB_PATH entry.
       - name: Install Monad Foundry
+        env:
+          FOUNDRY_DIR: ${{ github.workspace }}/.foundry
         run: |
           set -euo pipefail
           curl -L https://foundry.category.xyz | bash
-          test -x "$HOME/.foundry/bin/foundryup" \
-            || { echo "foundryup missing after install"; ls -la "$HOME/.foundry" || true; exit 1; }
-          "$HOME/.foundry/bin/foundryup" --network monad
-          echo "$HOME/.foundry/bin" >> "$GITHUB_PATH"
+          test -x "$FOUNDRY_DIR/bin/foundryup" \
+            || { echo "foundryup missing"; ls -laR "$FOUNDRY_DIR" 2>/dev/null || true; exit 1; }
+          "$FOUNDRY_DIR/bin/foundryup" --network monad
+          echo "$FOUNDRY_DIR/bin" >> "$GITHUB_PATH"
 
       - name: Versions
         run: forge --version && cast --version

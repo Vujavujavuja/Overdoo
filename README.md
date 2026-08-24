@@ -10,8 +10,8 @@
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="#how-it-works">How it works</a> ·
-  <a href="#monad-blitz">Monad Blitz</a> ·
-  <a href="#known-limitations">Limitations</a>
+  <a href="#known-limitations">Limitations</a> ·
+  <a href="#monad-blitz">Monad Blitz</a>
 </p>
 
 ---
@@ -31,29 +31,6 @@ contracts/   Foundry — DelayCover, FlightOracle, CapitalPool, ClaimRegistry, S
 
 There is **no server to run**. The rules engine and settlement logic live in
 Next.js API routes, so `web/` is the whole deployable app.
-
----
-
-## Monad Blitz
-
-Built at **[Monad Blitz](https://blitz.devnads.com)**, a one-day hackathon on
-Monad. **Placed 2nd**, judged by peer vote.
-
-Resources that mattered:
-
-| | |
-|---|---|
-| [Blitz resources](https://blitz.devnads.com/resources) | Curated starting point for the whole event |
-| [Monad docs](https://docs.monad.xyz) | Also available as [`llms.txt`](https://docs.monad.xyz/llms.txt) for agents |
-| [Monad vs Ethereum](https://docs.monad.xyz/developer-essentials/differences) | Read this first — the gas model genuinely differs |
-| [Monad Foundry](https://docs.monad.xyz/tooling-and-infra/toolkits/monad-foundry) | Foundry fork with Monad's gas model baked in |
-| [Faucet](https://faucet.monad.xyz) | Testnet MON |
-| [MonadVision](https://testnet.monadvision.com) | Explorer |
-| [MONSKILLS](https://skills.devnads.com) | Monad skill pack for coding agents |
-| [Dev Discord](https://discord.gg/monaddev) | Full Access role raises the faucet from 0.05 to 5 MON per claim |
-
-Monad testnet is chain `10143`. Blocks are ~400ms with 600ms finality, which is
-why the payout lands while the demo is still on screen.
 
 ---
 
@@ -185,6 +162,29 @@ Things that cost us time, in case they save you some:
   consecutive blocks share one timestamp. Never use it for ordering or entropy.
 - **Contracts can be 128KB** (vs 24.5KB on Ethereum), so proxy-splitting for size
   is usually unnecessary.
+
+---
+
+## Monad Blitz
+
+Built at **[Monad Blitz](https://blitz.devnads.com)**, a one-day hackathon on
+Monad. **Placed 2nd**, judged by peer vote.
+
+Resources that mattered:
+
+| | |
+|---|---|
+| [Blitz resources](https://blitz.devnads.com/resources) | Curated starting point for the whole event |
+| [Monad docs](https://docs.monad.xyz) | Also available as [`llms.txt`](https://docs.monad.xyz/llms.txt) for agents |
+| [Monad vs Ethereum](https://docs.monad.xyz/developer-essentials/differences) | Read this first — the gas model genuinely differs |
+| [Monad Foundry](https://docs.monad.xyz/tooling-and-infra/toolkits/monad-foundry) | Foundry fork with Monad's gas model baked in |
+| [Faucet](https://faucet.monad.xyz) | Testnet MON |
+| [MonadVision](https://testnet.monadvision.com) | Explorer |
+| [MONSKILLS](https://skills.devnads.com) | Monad skill pack for coding agents |
+| [Dev Discord](https://discord.gg/monaddev) | Full Access role raises the faucet from 0.05 to 5 MON per claim |
+
+Monad testnet is chain `10143`. Blocks are ~400ms with 600ms finality, which is
+why the payout lands while the demo is still on screen.
 
 ---
 
