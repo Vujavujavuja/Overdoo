@@ -122,7 +122,7 @@ cd contracts && forge test    # 39 passing
 Delays go stale. To find new ones:
 
 ```bash
-pnpm find-delayed -- EDDF,LEMD,LFPG 2026-08-22
+npm run find-delayed --prefix web -- EDDF,LEMD,LFPG 2026-08-22
 ```
 
 ## Topping up reserves

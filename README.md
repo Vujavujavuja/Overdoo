@@ -39,7 +39,7 @@ Next.js API routes, so `web/` is the whole deployable app.
 ```bash
 git clone --recursive https://github.com/Vujavujavuja/Overdoo
 cd monad-blitz
-pnpm install
+npm install --prefix web
 cd contracts && forge test        # 39 passing
 cd ../web && npm run dev
 ```
@@ -55,7 +55,7 @@ Without a flight-data key the app returns an error rather than inventing a
 result. To find real delayed flights to test with:
 
 ```bash
-pnpm find-delayed -- EDDF,LEMD,LFPG 2026-08-21
+npm run find-delayed --prefix web -- EDDF,LEMD,LFPG 2026-08-21
 ```
 
 Deployment and a demo script are in [GUIDE.md](GUIDE.md).

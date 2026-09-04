@@ -10,11 +10,13 @@ git clone --recursive https://github.com/Vujavujavuja/Overdoo
 ```
 
 ```bash
-pnpm install
+npm install --prefix web
 cp .env.example web/.env.local     # then fill it in
 cd contracts && forge test
 cd ../web && npm run dev
 ```
+
+This repo uses **npm**, not pnpm. There is one lockfile, `web/package-lock.json`.
 
 You need [Monad Foundry](https://docs.monad.xyz/tooling-and-infra/toolkits/monad-foundry),
 not upstream Foundry — it applies Monad's gas model, opcode pricing and the

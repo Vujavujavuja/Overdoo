@@ -2,9 +2,14 @@
   "name": "overdoo",
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter ./web dev",
-    "build": "pnpm --filter ./web build",
+    "dev": "npm --prefix web run dev",
+    "build": "npm --prefix web run build",
+    "lint": "npm --prefix web run lint",
+    "typecheck": "npm --prefix web exec tsc -- --noEmit",
     "test:contracts": "cd contracts && forge test",
-    "find-delayed": "pnpm --filter ./web find-delayed"
+    "find-delayed": "npm --prefix web run find-delayed"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
